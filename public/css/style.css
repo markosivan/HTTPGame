@@ -1,0 +1,673 @@
+/* ============================================================================
+   HTTP Quest — stylesheet
+   Plain CSS, no framework, no webfont loaded from anywhere. System fonts only.
+   ========================================================================== */
+
+:root {
+  /* Surfaces and text */
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-sunken: #eef1f8;
+  --ink: #161c2d;
+  --ink-soft: #4a5570;
+  --ink-faint: #7b859e;
+  --line: #d9dfec;
+
+  /* Brand */
+  --accent: #3d5afe;
+  --accent-dark: #2438c9;
+  --accent-wash: #e8ecff;
+
+  /* Signals */
+  --ok: #1b7f4b;
+  --ok-wash: #e2f5ea;
+  --warn: #9a6100;
+  --warn-wash: #fdf0d8;
+  --bad: #b3261e;
+  --bad-wash: #fce8e6;
+
+  /* Shape */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(22, 28, 45, .06), 0 6px 20px rgba(22, 28, 45, .06);
+  --gap: 20px;
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 0 48px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 { line-height: 1.25; margin: 0; }
+
+a { color: var(--accent-dark); }
+a:hover { color: var(--accent); }
+
+code, pre, .sent-url, .url-preview code { font-family: var(--mono); }
+
+/* Every interactive control keeps a clearly visible focus ring. */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 16px;
+  z-index: 10;
+}
+.skip-link:focus { left: 8px; top: 8px; }
+
+/* ------------------------------------------------------------------ header */
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 20px 16px;
+}
+
+.brand-title {
+  font-size: 1.6rem;
+  letter-spacing: -.02em;
+}
+
+.brand-tagline {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: .95rem;
+}
+
+.header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+
+.progress, .score {
+  margin: 0;
+  font-size: .95rem;
+  color: var(--ink-soft);
+}
+
+.progress span, .score span {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-link { font-size: .95rem; }
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: .95rem;
+  color: var(--ink-faint);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-btn:hover { color: var(--bad); }
+
+/* --------------------------------------------------------- level navigator */
+
+.level-nav {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px 8px;
+}
+
+.level-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Locked / current / solved differ by glyph and outline shape, never colour alone. */
+.level-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.level-chip-state::after { font-size: .85em; }
+
+/* Tabular digits keep every chip the same width as the numbers grow. */
+.level-chip-num { font-variant-numeric: tabular-nums; }
+
+.level-chip.is-locked {
+  border-style: dashed;
+  border-radius: 999px;
+  color: var(--ink-faint);
+  cursor: not-allowed;
+  opacity: .75;
+}
+.level-chip.is-locked .level-chip-state::after { content: "\2013"; } /* en dash */
+
+.level-chip.is-solved {
+  border-style: solid;
+  border-color: var(--ok);
+  background: var(--ok-wash);
+  color: var(--ok);
+}
+.level-chip.is-solved .level-chip-state::after { content: "\2713"; } /* check */
+
+/* The current level is square-cornered, so its shape alone sets it apart. */
+.level-chip.is-current {
+  border-radius: var(--radius-sm);
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  color: var(--accent-dark);
+  box-shadow: 0 0 0 3px rgba(61, 90, 254, .18);
+}
+.level-chip.is-current .level-chip-state::after { content: "\25B8"; } /* triangle */
+
+/* Solved *and* current: keep the square shape, keep the check. */
+.level-chip.is-solved.is-current .level-chip-state::after { content: "\2713"; }
+
+/* ------------------------------------------------------------------ layout */
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 12px 20px 0;
+  align-items: start;
+}
+
+/* The brief spans the full width above the two working panels. */
+.level-brief {
+  grid-column: 1 / -1;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+}
+
+.level-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.level-title { margin: 2px 0 6px; font-size: 1.25rem; }
+
+.level-scenario { margin: 0; color: var(--ink-soft); }
+
+.hint-box { margin-top: 14px; }
+
+.hint-text {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  background: var(--warn-wash);
+  border-left: 4px solid var(--warn);
+  border-radius: var(--radius-sm);
+  color: var(--warn);
+  font-size: .93rem;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px 20px;
+  min-width: 0; /* lets long content scroll instead of stretching the grid */
+}
+
+.panel-heading {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+}
+
+/* --------------------------------------------------------- request builder */
+
+.field { margin-bottom: 16px; }
+
+.field > label,
+.query-field legend {
+  display: block;
+  margin-bottom: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: .95rem;
+}
+
+#path, #body { font-family: var(--mono); }
+
+textarea { resize: vertical; min-height: 120px; }
+
+input[type="text"]:hover, select:hover, textarea:hover { border-color: var(--ink-faint); }
+
+.query-field {
+  margin: 0 0 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+
+.query-rows { display: grid; gap: 8px; margin-bottom: 10px; }
+
+.query-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 44px;
+  gap: 8px;
+  align-items: center;
+}
+
+.field-note {
+  margin: 6px 0 0;
+  font-size: .82rem;
+  color: var(--ink-faint);
+}
+
+/* The body field is never hidden — on a body-less method it is only dimmed. */
+.field-note.is-ignored { color: var(--warn); }
+
+.url-preview {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: var(--surface-sunken);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  font-size: .88rem;
+  overflow-x: auto;
+}
+
+.url-preview-label { color: var(--ink-faint); margin-right: 6px; }
+.url-preview code { color: var(--ink); word-break: break-all; }
+#url-preview-method { font-weight: 700; color: var(--accent-dark); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ----------------------------------------------------------------- buttons */
+
+.btn-primary, .btn-secondary, .btn-ghost {
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+.btn-secondary {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+}
+.btn-secondary:hover { border-color: var(--ink-faint); color: var(--ink); }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px dashed var(--line);
+  color: var(--accent-dark);
+  font-size: .9rem;
+  min-height: 40px;
+  padding: 8px 14px;
+}
+.btn-ghost:hover { border-color: var(--accent); background: var(--accent-wash); }
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink-faint);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.icon-btn:hover { border-color: var(--bad); color: var(--bad); background: var(--bad-wash); }
+
+/* ---------------------------------------------------------------- response */
+
+.sent-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: .9rem;
+}
+
+.sent-method {
+  font-weight: 700;
+  color: var(--accent-dark);
+  font-family: var(--mono);
+}
+
+.sent-url {
+  color: var(--ink-soft);
+  word-break: break-all;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.status-label {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+
+/* A small pill. Deliberately a different shape from the verdict banner, because
+   a correct answer can carry a 404 and the two signals must not be confused. */
+.status-chip {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-sunken);
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.status-chip.is-2xx { background: var(--ok-wash); border-color: var(--ok); color: var(--ok); }
+.status-chip.is-4xx { background: var(--warn-wash); border-color: var(--warn); color: var(--warn); }
+.status-chip.is-5xx { background: var(--bad-wash); border-color: var(--bad); color: var(--bad); }
+/* 1xx/3xx: nothing to celebrate or warn about, so it stays neutral. */
+.status-chip.is-other { background: var(--accent-wash); border-color: var(--accent); color: var(--accent-dark); }
+
+.status-chip.is-client-error {
+  background: var(--bad-wash);
+  border-color: var(--bad);
+  border-style: dashed;
+  color: var(--bad);
+}
+
+/* A wide, square-cornered banner with a leading glyph — nothing like the pill. */
+.verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  font-weight: 600;
+}
+
+.verdict::before {
+  font-size: 1.1em;
+  line-height: 1.3;
+}
+
+.verdict.is-correct {
+  background: var(--ok-wash);
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.verdict.is-correct::before { content: "\2713"; }
+
+.verdict.is-incorrect {
+  background: var(--bad-wash);
+  border-color: var(--bad);
+  color: var(--bad);
+}
+.verdict.is-incorrect::before { content: "\2715"; }
+
+.verdict-text { margin: 0; }
+
+.response-body {
+  margin: 0 0 16px;
+  padding: 14px;
+  max-height: 420px;
+  overflow: auto;          /* long JSON scrolls inside the panel */
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: .86rem;
+  line-height: 1.5;
+  white-space: pre;
+  tab-size: 2;
+}
+
+#next-level { width: 100%; }
+
+/* -------------------------------------------------------------- completion */
+
+.completion {
+  max-width: 1180px;
+  margin: var(--gap) auto 0;
+  padding: 28px 20px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--ok);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.completion-title { font-size: 1.5rem; color: var(--ok); }
+
+.completion-stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin: 20px 0 24px;
+}
+
+.completion-stat dt {
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+
+.completion-stat dd {
+  margin: 4px 0 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------- schemas page (SSR page) */
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* Any wide table scrolls sideways rather than breaking the layout. */
+.table-scroll, .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: .92rem;
+  overflow: hidden;
+}
+
+caption {
+  text-align: left;
+  padding: 10px 0;
+  color: var(--ink-faint);
+  font-size: .85rem;
+}
+
+th, td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--surface-sunken);
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: none; }
+
+tbody td code, tbody th code {
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: .88em;
+}
+
+/* --------------------------------------------------------------- responsive */
+
+@media (max-width: 768px) {
+  body { font-size: 16px; }
+
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 14px 12px;
+  }
+
+  .header-meta { justify-content: space-between; }
+
+  .level-nav { padding: 0 14px 8px; }
+
+  /* One stacked column: brief, then builder, then response. */
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 8px 14px 0;
+    gap: 14px;
+  }
+
+  .panel { padding: 16px 14px 18px; }
+
+  .level-brief { padding: 16px 14px; }
+
+  /* Full-width, comfortably tappable controls. */
+  .actions { flex-direction: column; }
+  .actions .btn-primary,
+  .actions .btn-secondary,
+  .btn-ghost,
+  #add-param { width: 100%; }
+
+  .level-chip { min-height: 44px; }
+
+  /* Key above value, remove button alongside, so nothing gets cramped. */
+  .query-row {
+    grid-template-columns: 1fr 44px;
+    grid-template-areas:
+      "key    remove"
+      "value  remove";
+    gap: 6px 8px;
+  }
+  .query-row .query-key { grid-area: key; }
+  .query-row .query-value { grid-area: value; }
+  .query-row .remove-param { grid-area: remove; height: 100%; }
+
+  .response-body { max-height: 320px; font-size: .8rem; }
+
+  .completion-stats { gap: 20px; }
+}
+
+@media (max-width: 380px) {
+  .brand-title { font-size: 1.35rem; }
+  .level-chip { padding: 6px 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
