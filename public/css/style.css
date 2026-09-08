@@ -386,6 +386,29 @@ input[type="text"]:hover, select:hover, textarea:hover { border-color: var(--ink
   cursor: not-allowed;
 }
 
+/* In-flight send button: a spinner plus a disabled control, so a second click
+   cannot start a second request. */
+.btn-primary.is-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 1;
+  cursor: progress;
+}
+
+.btn-primary.is-loading::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, .45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .icon-btn {
   width: 44px;
   height: 44px;
@@ -483,10 +506,13 @@ input[type="text"]:hover, select:hover, textarea:hover { border-color: var(--ink
   line-height: 1.3;
 }
 
+/* Correct settles in; incorrect nudges from side to side. The two verdicts are
+   told apart by movement as well as by colour and glyph. */
 .verdict.is-correct {
   background: var(--ok-wash);
   border-color: var(--ok);
   color: var(--ok);
+  animation: verdict-rise .34s cubic-bezier(.2, .8, .3, 1);
 }
 .verdict.is-correct::before { content: "\2713"; }
 
@@ -494,8 +520,21 @@ input[type="text"]:hover, select:hover, textarea:hover { border-color: var(--ink
   background: var(--bad-wash);
   border-color: var(--bad);
   color: var(--bad);
+  animation: verdict-nudge .38s ease-in-out;
 }
 .verdict.is-incorrect::before { content: "\2715"; }
+
+@keyframes verdict-rise {
+  from { opacity: 0; transform: translateY(-6px) scale(.99); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes verdict-nudge {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-7px); }
+  45%      { transform: translateX(6px); }
+  70%      { transform: translateX(-3px); }
+}
 
 .verdict-text { margin: 0; }
 
