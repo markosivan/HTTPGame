@@ -76,8 +76,27 @@ function checkLevel(levelId, req, statusCode, responseBody) { // eslint-disable-
     }
   }
 
+  // Optional query params: the scenario is satisfied whether or not they are sent,
+  // because the API already behaves that way by default. Sending one is still allowed,
+  // but then it has to say the right thing — asking for the opposite is not the goal.
+  const optionalQuery = solution.optionalQuery || {};
+
+  for (const [key, allowedValues] of Object.entries(optionalQuery)) {
+    const actual = actualQuery[key];
+    if (actual === undefined) continue; // Leaving it out is a valid way to solve this.
+
+    const accepted = allowedValues.map(normalise);
+    if (typeof actual !== 'string' || !accepted.includes(normalise(actual))) {
+      return incorrect(
+        'You are sending the right kind of query parameter, but at least one of its values does not match what the scenario asked for.'
+      );
+    }
+  }
+
   if (!solution.allowExtraQuery) {
-    const extra = Object.keys(actualQuery).filter((key) => !(key in expectedQuery));
+    const extra = Object.keys(actualQuery).filter(
+      (key) => !(key in expectedQuery) && !(key in optionalQuery)
+    );
     if (extra.length > 0) {
       return incorrect('You sent a query parameter that this task does not need.');
     }

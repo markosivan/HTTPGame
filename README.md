@@ -8,13 +8,6 @@ Express API with `fetch`, and a real response comes back with a real status code
 is simulated. The server alone decides whether your request was right, so the answers are
 never in the page you are looking at.
 
-## Developers
-
-| Name | ID |
-|------|----|
-| _(fill in)_ | _(fill in)_ |
-| _(fill in)_ | _(fill in)_ |
-
 ## Requirements
 
 - **Node.js 18 or newer** (developed and tested on Node.js 24.19.0 LTS). Node 18+ is
@@ -49,7 +42,7 @@ client code either.
 |---|-------|--------------------|
 | 1 | The whole catalog | Reading a collection, JSON responses |
 | 2 | A single album | Route parameter |
-| 3 | Browse by genre, cheapest first | Several query parameters at once: filtering, sort field, sort direction |
+| 3 | Browse by genre, cheapest first | Several query parameters in one request: filtering plus ordering (the sort direction may be stated or left to the server default) |
 | 4 | What people said about it | Relation between resources + route parameter |
 | 5 | Something that is not there | Error handling, reading a 404 as information |
 | 6 | A new record arrives | Creating a resource with a request body |

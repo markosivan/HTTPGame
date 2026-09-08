@@ -11,6 +11,17 @@ const router = express.Router();
 
 const SORT_FIELDS = ['rating', 'date'];
 
+const ORDER_VALUES = ['asc', 'desc'];
+
+/**
+ * Every query parameter is optional, so an empty value means "I did not specify this"
+ * rather than a value in its own right. Without this, `?limit=` becomes Number('') === 0
+ * and silently returns nothing.
+ */
+function supplied(value) {
+  return value !== undefined && String(value).trim() !== '';
+}
+
 const REVIEW_REQUIRED_FIELDS = ['albumId', 'author', 'rating', 'text'];
 
 const REVIEW_FIELD_VALIDATORS = {
@@ -74,42 +85,48 @@ router.get('/', (req, res) => {
 
   let result = store.getReviews();
 
-  if (albumId !== undefined) {
+  if (supplied(albumId)) {
     const wanted = Number(albumId);
     if (!Number.isFinite(wanted)) {
-      return res.status(400).json({ error: 'albumId must be a number', albumId });
+      return res.status(400).json({ error: 'Invalid albumId: it must be a number', albumId });
     }
     result = result.filter((review) => review.albumId === wanted);
   }
 
-  if (minRating !== undefined) {
+  if (supplied(minRating)) {
     const min = Number(minRating);
     if (!Number.isFinite(min)) {
-      return res.status(400).json({ error: 'minRating must be a number', minRating });
+      return res.status(400).json({ error: 'Invalid minRating: it must be a number', minRating });
     }
     result = result.filter((review) => review.rating >= min);
   }
 
-  if (maxRating !== undefined) {
+  if (supplied(maxRating)) {
     const max = Number(maxRating);
     if (!Number.isFinite(max)) {
-      return res.status(400).json({ error: 'maxRating must be a number', maxRating });
+      return res.status(400).json({ error: 'Invalid maxRating: it must be a number', maxRating });
     }
     result = result.filter((review) => review.rating <= max);
   }
 
-  if (author !== undefined) {
+  if (supplied(author)) {
     const wanted = String(author).trim().toLowerCase();
     result = result.filter((review) => review.author.toLowerCase().includes(wanted));
   }
 
-  if (sort !== undefined) {
+  // `order` is checked on its own rather than inside the sort block, so a bad direction
+  // is reported whether or not a sort field came with it.
+  const wantedOrder = supplied(order) ? String(order).trim().toLowerCase() : 'asc';
+  if (supplied(order) && !ORDER_VALUES.includes(wantedOrder)) {
+    return res.status(400).json({ error: 'Invalid order value', order, allowed: ORDER_VALUES });
+  }
+
+  if (supplied(sort)) {
     const field = String(sort).trim();
     if (!SORT_FIELDS.includes(field)) {
-      return res.status(400).json({ error: 'Unknown sort field', sort, allowed: SORT_FIELDS });
+      return res.status(400).json({ error: 'Invalid sort field', sort, allowed: SORT_FIELDS });
     }
 
-    const wantedOrder = String(order === undefined ? 'asc' : order).trim().toLowerCase();
     const direction = wantedOrder === 'desc' ? -1 : 1;
 
     result.sort((a, b) => {
@@ -119,10 +136,10 @@ router.get('/', (req, res) => {
     });
   }
 
-  if (limit !== undefined) {
+  if (supplied(limit)) {
     const max = Number(limit);
     if (!Number.isInteger(max) || max < 0) {
-      return res.status(400).json({ error: 'limit must be a non-negative integer', limit });
+      return res.status(400).json({ error: 'Invalid limit: it must be a non-negative integer', limit });
     }
     result = result.slice(0, max);
   }

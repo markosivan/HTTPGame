@@ -9,6 +9,17 @@ const router = express.Router();
 
 const SORT_FIELDS = ['price', 'year', 'title'];
 
+const ORDER_VALUES = ['asc', 'desc'];
+
+/**
+ * Every query parameter is optional, so an empty value means "I did not specify this"
+ * rather than a value in its own right. Without this, `?limit=` and `?maxPrice=` become
+ * Number('') === 0 and silently return an empty catalog.
+ */
+function supplied(value) {
+  return value !== undefined && String(value).trim() !== '';
+}
+
 const ALBUM_REQUIRED_FIELDS = ['title', 'artist', 'genre', 'price'];
 
 const ALBUM_FIELD_VALIDATORS = {
@@ -88,47 +99,55 @@ router.get('/', (req, res) => {
 
   let result = store.getAlbums();
 
-  if (genre !== undefined) {
+  if (supplied(genre)) {
     const wanted = String(genre).trim().toLowerCase();
     result = result.filter((album) => album.genre.toLowerCase() === wanted);
   }
 
-  if (artist !== undefined) {
+  if (supplied(artist)) {
     const wanted = String(artist).trim().toLowerCase();
     result = result.filter((album) => album.artist.toLowerCase().includes(wanted));
   }
 
-  if (minPrice !== undefined) {
+  if (supplied(minPrice)) {
     const min = Number(minPrice);
     if (!Number.isFinite(min)) {
-      return res.status(400).json({ error: 'minPrice must be a number', minPrice });
+      return res.status(400).json({ error: 'Invalid minPrice: it must be a number', minPrice });
     }
     result = result.filter((album) => album.price >= min);
   }
 
-  if (maxPrice !== undefined) {
+  if (supplied(maxPrice)) {
     const max = Number(maxPrice);
     if (!Number.isFinite(max)) {
-      return res.status(400).json({ error: 'maxPrice must be a number', maxPrice });
+      return res.status(400).json({ error: 'Invalid maxPrice: it must be a number', maxPrice });
     }
     result = result.filter((album) => album.price <= max);
   }
 
-  if (inStock !== undefined) {
+  if (supplied(inStock)) {
     const wanted = String(inStock).trim().toLowerCase();
     if (wanted !== 'true' && wanted !== 'false') {
-      return res.status(400).json({ error: 'inStock must be true or false', inStock });
+      return res.status(400).json({
+        error: 'Invalid inStock value', inStock, allowed: ['true', 'false']
+      });
     }
     result = result.filter((album) => album.inStock === (wanted === 'true'));
   }
 
-  if (sort !== undefined) {
+  // `order` is checked on its own rather than inside the sort block, so a bad direction
+  // is reported whether or not a sort field came with it.
+  const wantedOrder = supplied(order) ? String(order).trim().toLowerCase() : 'asc';
+  if (supplied(order) && !ORDER_VALUES.includes(wantedOrder)) {
+    return res.status(400).json({ error: 'Invalid order value', order, allowed: ORDER_VALUES });
+  }
+
+  if (supplied(sort)) {
     const field = String(sort).trim();
     if (!SORT_FIELDS.includes(field)) {
-      return res.status(400).json({ error: 'Unknown sort field', sort, allowed: SORT_FIELDS });
+      return res.status(400).json({ error: 'Invalid sort field', sort, allowed: SORT_FIELDS });
     }
 
-    const wantedOrder = String(order === undefined ? 'asc' : order).trim().toLowerCase();
     const direction = wantedOrder === 'desc' ? -1 : 1;
 
     result.sort((a, b) => {
@@ -137,10 +156,10 @@ router.get('/', (req, res) => {
     });
   }
 
-  if (limit !== undefined) {
+  if (supplied(limit)) {
     const max = Number(limit);
     if (!Number.isInteger(max) || max < 0) {
-      return res.status(400).json({ error: 'limit must be a non-negative integer', limit });
+      return res.status(400).json({ error: 'Invalid limit: it must be a non-negative integer', limit });
     }
     result = result.slice(0, max);
   }

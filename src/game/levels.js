@@ -13,6 +13,8 @@
  *   routePath         Express route pattern, as baseUrl + router path (e.g. /api/albums/:id)
  *   params            route params that must match, compared as strings
  *   query             query params that must all be present with these values
+ *   optionalQuery     query params that may be left out, mapped to the values accepted
+ *                     if they ARE sent (the API already defaults to those)
  *   allowExtraQuery   when false, any query param outside `query` is a mismatch
  *   requiresBody      the request must carry a non-empty JSON body
  *   bodyMustInclude   array of required body keys, or an object of key -> pinned value
@@ -64,13 +66,16 @@ const LEVELS = [
     title: 'Browse by genre, cheapest first',
     scenario:
       'A visitor only cares about Rock albums, and wants to see the cheapest ones at the top of the list. Ask the server for exactly that view of the catalog.',
-    hint: 'You are still reading the whole collection, but three separate instructions ride along with the question: what to keep, what to order by, and which direction to order in.',
+    hint: 'You are still reading the whole collection, but two separate instructions have to ride along with the question: what to keep, and what to order by. Naming the direction as well is allowed, as long as it matches what the scenario asked for.',
     successMessage: 'Correct. Query parameters narrowed and reordered the collection without changing its address.',
     solution: {
       method: 'GET',
       routePath: '/api/albums',
       params: {},
-      query: { genre: 'Rock', sort: 'price', order: 'asc' },
+      query: { genre: 'Rock', sort: 'price' },
+      // The API already sorts ascending unless told otherwise, so stating the direction
+      // is optional — but saying "desc" asks for the opposite of the scenario.
+      optionalQuery: { order: ['asc', ''] },
       allowExtraQuery: false,
       requiresBody: false,
       bodyMustInclude: null,
