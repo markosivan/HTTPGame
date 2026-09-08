@@ -1,0 +1,22 @@
+{
+  "name": "http-rest-game",
+  "version": "1.0.0",
+  "description": "A browser game that teaches HTTP and REST by building real requests against an Express API.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "http",
+    "rest",
+    "express",
+    "ejs",
+    "game"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "express": "^5.2.1"
+  }
+}
