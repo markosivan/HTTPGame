@@ -1,1 +1,152 @@
-<h1>OK</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head', { pageTitle: 'HTTP Quest' }) %>
+</head>
+<body>
+  <a class="skip-link" href="#builder-panel">Skip to the request builder</a>
+
+  <header class="app-header">
+    <div class="brand">
+      <h1 class="brand-title">HTTP Quest</h1>
+      <p class="brand-tagline">Build a real request. The server decides if you got it right.</p>
+    </div>
+
+    <div class="header-meta">
+      <p class="progress" id="progress">
+        Level <span id="progress-current">1</span> of <span id="progress-total"><%= typeof totalLevels !== 'undefined' ? totalLevels : (typeof levels !== 'undefined' ? levels.length : 0) %></span>
+      </p>
+      <p class="score">Score <span id="score">0</span></p>
+      <nav class="header-nav">
+        <a class="header-link" href="/schemas">Resource schemas</a>
+        <button type="button" id="reset-progress" class="link-btn">Reset progress</button>
+      </nav>
+    </div>
+  </header>
+
+  <nav class="level-nav" aria-label="Level navigator">
+    <ul class="level-list" id="level-list">
+      <% (typeof levels !== 'undefined' ? levels : []).forEach(function (level) { %>
+        <li class="level-item">
+          <button type="button"
+                  class="level-chip is-locked"
+                  data-level-id="<%= level.id %>"
+                  aria-label="Level <%= level.id %>: <%= level.title %>">
+            <span class="level-chip-state" aria-hidden="true"></span>
+            <span class="level-chip-num"><%= level.id %></span>
+          </button>
+        </li>
+      <% }); %>
+    </ul>
+  </nav>
+
+  <main class="layout">
+    <section class="level-brief" aria-labelledby="level-title">
+      <p class="level-eyebrow" id="level-eyebrow">Level 1</p>
+      <h2 class="level-title" id="level-title">Loading&hellip;</h2>
+      <p class="level-scenario" id="level-scenario"></p>
+
+      <div class="hint-box">
+        <button type="button" id="hint-btn" class="btn-ghost">Reveal a hint (costs points)</button>
+        <p class="hint-text" id="hint-text" hidden></p>
+      </div>
+    </section>
+
+    <section class="panel builder" id="builder-panel" aria-labelledby="builder-heading">
+      <h2 class="panel-heading" id="builder-heading">Request builder</h2>
+
+      <form id="request-form" novalidate>
+        <div class="field">
+          <label for="method">Method</label>
+          <select id="method" name="method">
+            <option value="GET" selected>GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="path">Path</label>
+          <input type="text" id="path" name="path" value="/api/"
+                 autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+
+        <fieldset class="field query-field">
+          <legend>Query parameters</legend>
+
+          <div class="query-rows" id="query-rows">
+            <div class="query-row">
+              <input type="text" class="query-key" placeholder="name" aria-label="Query parameter name"
+                     autocomplete="off" spellcheck="false">
+              <input type="text" class="query-value" placeholder="value" aria-label="Query parameter value"
+                     autocomplete="off" spellcheck="false">
+              <button type="button" class="icon-btn remove-param" aria-label="Remove this query parameter">&times;</button>
+            </div>
+          </div>
+
+          <button type="button" id="add-param" class="btn-ghost">+ Add parameter</button>
+        </fieldset>
+
+        <div class="field">
+          <label for="body">Request body (JSON)</label>
+          <textarea id="body" name="body" rows="7" spellcheck="false"
+                    autocomplete="off" placeholder="{ }"></textarea>
+          <p class="field-note" id="body-note"></p>
+        </div>
+
+        <p class="url-preview">
+          <span class="url-preview-label">Will send:</span>
+          <code id="url-preview"><span id="url-preview-method">GET</span> /api/</code>
+        </p>
+
+        <div class="actions">
+          <button type="submit" id="send" class="btn-primary">Send request</button>
+          <button type="button" id="reset-builder" class="btn-secondary">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel response" aria-labelledby="response-heading">
+      <h2 class="panel-heading" id="response-heading">Server response</h2>
+
+      <p class="sent-line">
+        <span class="sent-method" id="sent-method">&mdash;</span>
+        <span class="sent-url" id="sent-url">Nothing sent yet.</span>
+      </p>
+
+      <p class="status-line">
+        <span class="status-label">Status</span>
+        <span class="status-chip" id="status-chip">&mdash;</span>
+      </p>
+
+      <div class="verdict" id="verdict" hidden>
+        <p class="verdict-text" id="verdict-text"></p>
+      </div>
+
+      <pre class="response-body" id="response-body">Send a request to see what the server answers.</pre>
+
+      <button type="button" id="next-level" class="btn-primary" disabled>Next level &rarr;</button>
+    </section>
+  </main>
+
+  <section class="completion" id="completion" hidden aria-labelledby="completion-title">
+    <h2 class="completion-title" id="completion-title">Every level cleared</h2>
+    <dl class="completion-stats">
+      <div class="completion-stat">
+        <dt>Final score</dt>
+        <dd id="final-score">0</dd>
+      </div>
+      <div class="completion-stat">
+        <dt>Total attempts</dt>
+        <dd id="final-attempts">0</dd>
+      </div>
+    </dl>
+    <button type="button" id="replay" class="btn-primary">Play again from level 1</button>
+  </section>
+
+  <script type="application/json" id="levels-data"><%- JSON.stringify(typeof levels !== 'undefined' ? levels : []) %></script>
+  <script src="/js/game.js" defer></script>
+</body>
+</html>
