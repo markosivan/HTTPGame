@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head', { pageTitle: 'Resource schemas — HTTP Quest' }) %>
+</head>
+<body>
+  <!--
+    Every table below is built by EJS on the server, from the data in src/schemas.js.
+    No client-side JavaScript is involved: view source and the field names are already
+    in the HTML that arrived from the server.
+  -->
+  <header class="app-header">
+    <div class="brand">
+      <h1 class="brand-title">Resource schemas</h1>
+      <p class="brand-tagline">The two resources this API is built from, and the routes that operate on them.</p>
+    </div>
+
+    <div class="header-meta">
+      <nav class="header-nav">
+        <a class="header-link" href="/">&larr; Back to the game</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <% schemas.forEach(function (schema) { %>
+      <section class="panel" id="<%= schema.name %>">
+        <h2 class="panel-heading"><%= schema.title %> &middot; /api/<%= schema.name %></h2>
+        <p><%= schema.description %></p>
+
+        <h3>Fields</h3>
+        <div class="table-scroll">
+          <table>
+            <caption>Every field of a <%= schema.title.toLowerCase() %>, and whether you have to send it.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Field</th>
+                <th scope="col">Type</th>
+                <th scope="col">Required</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% schema.fields.forEach(function (field) { %>
+                <tr>
+                  <th scope="row"><code><%= field.name %></code></th>
+                  <td><%= field.type %></td>
+                  <td><%= field.required ? 'required' : 'optional' %></td>
+                  <td><%= field.description %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Endpoints</h3>
+        <div class="table-scroll">
+          <table>
+            <caption>Routes that act on <%= schema.name %>.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Method</th>
+                <th scope="col">Path</th>
+                <th scope="col">What it does</th>
+                <th scope="col">Status codes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% schema.endpoints.forEach(function (endpoint) { %>
+                <tr>
+                  <th scope="row"><code><%= endpoint.method %></code></th>
+                  <td><code><%= endpoint.path %></code></td>
+                  <td><%= endpoint.description %></td>
+                  <td><%= endpoint.statuses %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Query parameters</h3>
+        <div class="table-scroll">
+          <table>
+            <caption>Optional, and freely combinable, on <code>GET /api/<%= schema.name %></code>.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Parameter</th>
+                <th scope="col">Accepts</th>
+                <th scope="col">Effect</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% schema.queryParams.forEach(function (param) { %>
+                <tr>
+                  <th scope="row"><code><%= param.name %></code></th>
+                  <td><%= param.type %></td>
+                  <td><%= param.description %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    <% }); %>
+
+    <section class="panel">
+      <h2 class="panel-heading">How the two fit together</h2>
+      <p>
+        A review belongs to exactly one album through its <code>albumId</code>. That
+        relationship has a route of its own, <code>/api/albums/:id/reviews</code>, and
+        deleting an album deletes its reviews along with it.
+      </p>
+      <p><a class="header-link" href="/">&larr; Back to the game</a></p>
+    </section>
+  </main>
+</body>
+</html>
