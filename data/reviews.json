@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "albumId": 1,
+    "author": "Dana Levi",
+    "rating": 5,
+    "text": "Still the best headphone album ever pressed. Every listen finds something new.",
+    "date": "2023-01-15"
+  },
+  {
+    "id": 2,
+    "albumId": 1,
+    "author": "Noam Barak",
+    "rating": 4,
+    "text": "Brilliant production, though the middle section drags a little.",
+    "date": "2023-03-02"
+  },
+  {
+    "id": 3,
+    "albumId": 2,
+    "author": "Yael Cohen",
+    "rating": 5,
+    "text": "Calm, spacious and endlessly cool. The record I put on to think.",
+    "date": "2022-11-20"
+  },
+  {
+    "id": 4,
+    "albumId": 3,
+    "author": "Omer Shahar",
+    "rating": 3,
+    "text": "Huge songs, but the whole thing sounds very much of its decade.",
+    "date": "2024-02-08"
+  },
+  {
+    "id": 5,
+    "albumId": 4,
+    "author": "Tamar Peled",
+    "rating": 4,
+    "text": "Pure riff delivery. Loud, short and to the point.",
+    "date": "2023-07-19"
+  },
+  {
+    "id": 6,
+    "albumId": 5,
+    "author": "Gil Avrahami",
+    "rating": 2,
+    "text": "Well made, but the songs never really grabbed me.",
+    "date": "2024-05-30"
+  },
+  {
+    "id": 7,
+    "albumId": 7,
+    "author": "Shira Mizrahi",
+    "rating": 5,
+    "text": "It still sounds like someone kicking a door open.",
+    "date": "2022-09-12"
+  },
+  {
+    "id": 8,
+    "albumId": 7,
+    "author": "Eitan Reznik",
+    "rating": 4,
+    "text": "The quiet-loud dynamics are the whole point and they land every time.",
+    "date": "2023-04-04"
+  },
+  {
+    "id": 9,
+    "albumId": 7,
+    "author": "Maya Golan",
+    "rating": 3,
+    "text": "Important record, but the singles overshadow the rest of it.",
+    "date": "2024-08-21"
+  },
+  {
+    "id": 10,
+    "albumId": 8,
+    "author": "Roi Feldman",
+    "rating": 5,
+    "text": "A masterclass in hard bop. The title track alone is worth it.",
+    "date": "2022-06-27"
+  },
+  {
+    "id": 11,
+    "albumId": 9,
+    "author": "Lior Katz",
+    "rating": 4,
+    "text": "Warm, live-sounding electronic music. Ages very well.",
+    "date": "2023-10-09"
+  },
+  {
+    "id": 12,
+    "albumId": 10,
+    "author": "Adi Ben-Ami",
+    "rating": 2,
+    "text": "The medley is great, the first half far less so.",
+    "date": "2024-01-03"
+  },
+  {
+    "id": 13,
+    "albumId": 10,
+    "author": "Nadav Segal",
+    "rating": 5,
+    "text": "The closing side is the best twenty minutes they ever recorded.",
+    "date": "2023-12-14"
+  },
+  {
+    "id": 14,
+    "albumId": 12,
+    "author": "Hila Rosen",
+    "rating": 4,
+    "text": "Dense and demanding, and it rewards the effort.",
+    "date": "2024-03-17"
+  },
+  {
+    "id": 15,
+    "albumId": 6,
+    "author": "Ariel Nissim",
+    "rating": 3,
+    "text": "The production is legendary; some of the guest verses are not.",
+    "date": "2022-12-05"
+  }
+]
