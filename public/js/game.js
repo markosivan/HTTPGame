@@ -40,6 +40,10 @@
 
   // -------------------------------------------------------------------- state
 
+  // True from the moment a request leaves until its response is rendered, so a
+  // double-click cannot fire a second request or double-count an attempt.
+  var inFlight = false;
+
   var state = {
     currentLevel: levels.length ? levels[0].id : null,
     solved: [],
@@ -83,7 +87,12 @@
     verdict: document.getElementById('verdict'),
     verdictText: document.getElementById('verdict-text'),
     responseBody: document.getElementById('response-body'),
-    nextLevel: document.getElementById('next-level')
+    nextLevel: document.getElementById('next-level'),
+
+    completion: document.getElementById('completion'),
+    finalScore: document.getElementById('final-score'),
+    finalAttempts: document.getElementById('final-attempts'),
+    replay: document.getElementById('replay')
   };
 
   // ------------------------------------------------------------------ helpers
@@ -119,6 +128,12 @@
 
   function carriesBody(method) {
     return BODYLESS_METHODS.indexOf(method) === -1;
+  }
+
+  function allSolved() {
+    return levels.length > 0 && levels.every(function (level) {
+      return isSolved(level.id);
+    });
   }
 
   // ------------------------------------------------------------------ storage
@@ -302,7 +317,7 @@
     el.levelEyebrow.textContent = 'Level ' + (indexOfLevel(level.id) + 1);
     el.levelTitle.textContent = level.title;
     el.levelScenario.textContent = level.scenario;
-    el.send.disabled = false;
+    el.send.disabled = inFlight;
 
     // A hint stays revealed once bought, and costs nothing on a solved level.
     if (usedHint(level.id)) {
@@ -341,15 +356,43 @@
     return 'is-other';
   }
 
+  /**
+   * Shows the banner and restarts its animation. Re-assigning the same class does
+   * not replay a CSS animation, so the element is forced to reflow in between.
+   */
+  function showVerdict(correct, message) {
+    el.verdict.hidden = false;
+    el.verdict.className = 'verdict';
+    void el.verdict.offsetWidth;
+    el.verdict.className = 'verdict ' + (correct ? 'is-correct' : 'is-incorrect');
+    el.verdictText.textContent = message;
+  }
+
   /** A problem the browser caught before anything was sent. */
   function showClientError(message) {
     el.statusChip.textContent = 'not sent';
     el.statusChip.className = 'status-chip is-client-error';
-    el.verdict.hidden = false;
-    el.verdict.className = 'verdict is-incorrect';
-    el.verdictText.textContent = message;
+    showVerdict(false, message);
     el.responseBody.textContent = 'The request never left the browser, so there is no server response.';
     el.nextLevel.disabled = true;
+  }
+
+  function setSending(sending) {
+    inFlight = sending;
+    el.send.disabled = sending;
+    el.send.classList.toggle('is-loading', sending);
+    el.send.textContent = sending ? 'Sending…' : 'Send request';
+  }
+
+  function renderCompletion() {
+    if (!allSolved()) {
+      el.completion.hidden = true;
+      return;
+    }
+
+    el.finalScore.textContent = String(totalScore());
+    el.finalAttempts.textContent = String(totalAttempts());
+    el.completion.hidden = false;
   }
 
   // ------------------------------------------------------------------- levels
@@ -379,6 +422,8 @@
   // ------------------------------------------------------------------ sending
 
   function sendRequest() {
+    if (inFlight) return; // A request is already on its way.
+
     var level = levelById[state.currentLevel];
     if (!level) return;
 
@@ -414,6 +459,7 @@
 
     el.sentMethod.textContent = request.method;
     el.sentUrl.textContent = url;
+    setSending(true);
 
     fetch(url, options)
       .then(function (response) {
@@ -427,11 +473,12 @@
       .catch(function (err) {
         el.statusChip.textContent = 'no response';
         el.statusChip.className = 'status-chip is-5xx';
-        el.verdict.hidden = false;
-        el.verdict.className = 'verdict is-incorrect';
-        el.verdictText.textContent = 'The request could not reach the server.';
+        showVerdict(false, 'The request could not reach the server.');
         el.responseBody.textContent = String(err && err.message ? err.message : err);
         el.nextLevel.disabled = true;
+      })
+      .then(function () {
+        setSending(false);
       });
   }
 
@@ -461,10 +508,8 @@
 
     var correct = result === 'correct';
 
-    el.verdict.hidden = false;
-    el.verdict.className = 'verdict ' + (correct ? 'is-correct' : 'is-incorrect');
-    el.verdictText.textContent = feedback ||
-      (result ? (correct ? 'Correct.' : 'Not quite.') : 'The server sent no verdict for this request.');
+    showVerdict(correct, feedback ||
+      (result ? (correct ? 'Correct.' : 'Not quite.') : 'The server sent no verdict for this request.'));
 
     if (correct) {
       awardPoints(levelId);
@@ -476,6 +521,7 @@
 
     renderNav();
     renderProgress();
+    renderCompletion();
     save();
   }
 
@@ -518,6 +564,17 @@
     rememberRequest();
   });
 
+  // Enter anywhere in a query row sends, so a value can be tried without reaching
+  // for the mouse. The row inputs are plain text fields, so nothing else is lost.
+  el.queryRows.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter') return;
+    if (!event.target.classList.contains('query-value') &&
+        !event.target.classList.contains('query-key')) return;
+
+    event.preventDefault();
+    sendRequest();
+  });
+
   el.hintBtn.addEventListener('click', function () {
     var level = levelById[state.currentLevel];
     if (!level || usedHint(level.id)) return;
@@ -548,9 +605,7 @@
     goToLevel(id);
   });
 
-  el.resetProgress.addEventListener('click', function () {
-    if (!window.confirm('Reset all progress and start again from the first level?')) return;
-
+  function startOver() {
     state.solved = [];
     state.attempts = {};
     state.hints = [];
@@ -564,11 +619,25 @@
       // Nothing to clear if storage is unavailable.
     }
 
+    el.completion.hidden = true;
+
     if (state.currentLevel === null) {
       renderLevel();
     } else {
       goToLevel(state.currentLevel);
     }
+  }
+
+  el.resetProgress.addEventListener('click', function () {
+    if (!window.confirm('Reset all progress and start again from the first level?')) return;
+    startOver();
+  });
+
+  // The score has already been shown on the completion screen, so replaying
+  // straight away needs no extra confirmation.
+  el.replay.addEventListener('click', function () {
+    startOver();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // --------------------------------------------------------------------- boot
@@ -581,4 +650,6 @@
   } else {
     renderLevel();
   }
+
+  renderCompletion();
 })();
