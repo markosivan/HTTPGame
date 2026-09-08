@@ -21,6 +21,15 @@ function checkLevel(levelId, req, statusCode, responseBody) { // eslint-disable-
 
   const solution = level.solution;
 
+  // 0. Body that never parsed ------------------------------------------------
+  // The request died inside the JSON parser, before any route matched, so none of the
+  // comparisons below would mean anything. Say what actually went wrong instead.
+  if (req.jsonParseFailed) {
+    return incorrect(
+      'The server could not read your request body as JSON, so it never reached a route. Check the quotes, the commas and the braces.'
+    );
+  }
+
   // 1. Method ---------------------------------------------------------------
   if (String(req.method).toUpperCase() !== solution.method) {
     return incorrect(
