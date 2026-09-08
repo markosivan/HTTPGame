@@ -5,6 +5,7 @@ const express = require('express');
 
 const pagesRouter = require('./src/routes/pages');
 const albumsRouter = require('./src/routes/albums');
+const reviewsRouter = require('./src/routes/reviews');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,9 +30,28 @@ app.use((err, req, res, next) => {
 
 // --- API ---
 app.use('/api/albums', albumsRouter);
+app.use('/api/reviews', reviewsRouter);
+
+// Anything else under /api is a wrong path, and must still answer in JSON: without this,
+// Express replies with an HTML 404 and the player never gets a verdict for the level.
+// (Express 5 spells the wildcard '*splat'; in Express 4 the same route reads '/api/*'.)
+app.all(['/api', '/api/*splat'], (req, res) => {
+  res.status(404).json({
+    error: 'No such API endpoint',
+    path: req.originalUrl,
+    method: req.method
+  });
+});
 
 // --- Pages (SSR) ---
 app.use('/', pagesRouter);
+
+// Last line of defence: an unexpected server error still leaves /api answering JSON.
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (res.headersSent) return next(err);
+  return res.status(500).json({ error: 'Internal server error' });
+});
 
 app.listen(PORT, () => {
   console.log(`HTTP/REST game running at http://localhost:${PORT}`);
