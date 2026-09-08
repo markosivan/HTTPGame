@@ -4,6 +4,7 @@ const path = require('path');
 const express = require('express');
 
 const pagesRouter = require('./src/routes/pages');
+const albumsRouter = require('./src/routes/albums');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,9 @@ app.use((err, req, res, next) => {
   }
   return next(err);
 });
+
+// --- API ---
+app.use('/api/albums', albumsRouter);
 
 // --- Pages (SSR) ---
 app.use('/', pagesRouter);
