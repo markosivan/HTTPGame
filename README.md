@@ -61,7 +61,7 @@ Every endpoint answers with JSON, including every error. All API routes live und
 
 | Method | Path | Parameters | Status codes |
 |--------|------|------------|--------------|
-| `GET` | `/api/albums` | Query (all optional, combinable): `genre` (exact, case-insensitive), `artist` (substring, case-insensitive), `minPrice`, `maxPrice`, `inStock` (`true`/`false`), `sort` (`price`, `year`, `title`), `order` (`asc`/`desc`), `limit` | `200`, `400` on an unknown `sort` or a non-numeric bound |
+| `GET` | `/api/albums` | Query (all optional, combinable): `genre` (exact, case-insensitive), `artist` (substring, case-insensitive), `minPrice`, `maxPrice`, `inStock` (`true`/`false`), `sort` (`price`, `year`, `title`), `order` (`asc`/`desc`, defaults to `asc`), `limit` (non-negative integer) | `200`, `400` on any invalid value |
 | `GET` | `/api/albums/:id` | Route: `id` | `200`, `404` |
 | `POST` | `/api/albums` | Body: `title`, `artist`, `genre`, `price` required | `201` + `Location` header, `400` |
 | `PUT` | `/api/albums/:id` | Route: `id`. Body: all required fields | `200`, `400`, `404` |
@@ -74,11 +74,20 @@ Every endpoint answers with JSON, including every error. All API routes live und
 
 | Method | Path | Parameters | Status codes |
 |--------|------|------------|--------------|
-| `GET` | `/api/reviews` | Query (all optional): `albumId`, `minRating`, `maxRating`, `author` (substring, case-insensitive), `sort` (`rating`, `date`), `order`, `limit` | `200`, `400` |
+| `GET` | `/api/reviews` | Query (all optional): `albumId`, `minRating`, `maxRating`, `author` (substring, case-insensitive), `sort` (`rating`, `date`), `order` (`asc`/`desc`, defaults to `asc`), `limit` (non-negative integer) | `200`, `400` on any invalid value |
 | `GET` | `/api/reviews/:id` | Route: `id` | `200`, `404` |
 | `PUT` | `/api/reviews/:id` | Route: `id`. Body: `author`, `rating`, `text`, `albumId`, all required | `200`, `400`, `404` |
 | `PATCH` | `/api/reviews/:id` | Route: `id`. Body: any subset of fields | `200`, `400`, `404` |
 | `DELETE` | `/api/reviews/:id` | Route: `id` | `200` with the deleted review, `404` |
+
+Query parameters follow one consistent rule on both resources: **an empty value means the
+parameter was not specified and is ignored, while a non-empty invalid value is rejected
+with `400`** and an error naming what was allowed. So `?limit=` returns the whole
+collection rather than nothing, and `?order=banana` answers:
+
+```json
+{ "error": "Invalid order value", "order": "banana", "allowed": ["asc", "desc"] }
+```
 
 Any other path under `/api` answers `404` with a JSON body, so a wrong guess still gets a
 proper response rather than an HTML error page.
